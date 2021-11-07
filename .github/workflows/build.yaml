@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 
-name: Multijob workflow to build, scan and publish a Docker Image to ACR
+name: container-cicd-workflow
 
 on: push
 
@@ -8,15 +8,12 @@ env:
   CONTAINER_REGISTRY: sbacrdemo.azurecr.io  # set this to Container Registry name
 
 jobs:
-  build:
+  container-pipeline:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
               
    ## Authentication
-    # - uses: azure/login@v1
-    #   with:
-    #     creds: ${{ secrets.AZURE_CREDENTIALS  }}
     - uses: azure/docker-login@v1
       with:
         login-server: ${{ env.CONTAINER_REGISTRY }}
