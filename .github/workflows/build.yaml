@@ -6,7 +6,7 @@ on: push
 
 env:
   CONTAINER_REGISTRY: sbacrdemo.azurecr.io  # set this to Container Registry name
-  DOCKERFILE: Dockerfile_secure
+  DOCKERFILE: Dockerfile_vulnerable
 
 jobs:
   container-pipeline:
