@@ -23,8 +23,7 @@ jobs:
     
     ## Build The Docker Image
     - run: |
-        echo "github.sha=$GITHUB_SHA"
-        docker build -t ${{ env.CONTAINER_REGISTRY }}/scanning-demo:${{ github.sha }} . -f ${{ env.DOCKERFILE }}
+        docker build -t ${{ env.CONTAINER_REGISTRY }}/ci-scanning-demo:${{ github.run_number }} . -f ${{ env.DOCKERFILE }}
 
     ## Scan the Docker Image
     - uses: Azure/container-scan@v0 
