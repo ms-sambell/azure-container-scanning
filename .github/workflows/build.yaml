@@ -6,6 +6,7 @@ on: push
 
 env:
   CONTAINER_REGISTRY: sbacrdemo.azurecr.io  # set this to Container Registry name
+  DOCKERFILE: Dockerfile_secure
 
 jobs:
   container-pipeline:
@@ -23,7 +24,7 @@ jobs:
     ## Build The Docker Image
     - run: |
         echo "github.sha=$GITHUB_SHA"
-        docker build -t ${{ env.CONTAINER_REGISTRY }}/scanning-demo:${{ github.sha }} .
+        docker build -t ${{ env.CONTAINER_REGISTRY }}/scanning-demo:${{ github.sha }} . -f ${{ env.DOCKERFILE }}
 
     ## Scan the Docker Image
     - uses: Azure/container-scan@v0 
