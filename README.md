@@ -15,11 +15,11 @@ At a high level this functionality works by levering Trivy (container vulnerabil
 ### Findings 
 Below are the findings that are generated:
 #### GitHub Actions Example
-![github-actions-findings](.docs\cloud-defender-results.png)
+![github-actions-findings](.docs/cloud-defender-results.png)
 
 
 #### Cloud Defender Example
-![cloud-defender-findings](.docs\github-actions-container-results.png)
+![cloud-defender-findings](.docs/github-actions-container-results.png)
 
 
 ### Architecture Overview
