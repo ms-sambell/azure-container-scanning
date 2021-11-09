@@ -5,46 +5,50 @@ name: container-cicd-workflow
 on: push
 
 env:
-  CONTAINER_REGISTRY: sbacrdemo.azurecr.io  # set this to Container Registry name
+  CONTAINER_REGISTRY: sbacrdemo.azurecr.io 
   IMAGE_NAME: ci-scanning-demo
   DOCKERFILE: Dockerfile_vulnerable
 
 jobs:
-  container-pipeline:
+  acr-cicd-workflow:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
+      ## Clone branch that triggered the build
+      - name: git-checkout
+        uses: actions/checkout@master
 
-   ## Authentication
-    - uses: azure/docker-login@v1
-      with:
-        login-server: ${{ env.CONTAINER_REGISTRY }}
-        username: ${{ secrets.REGISTRY_USERNAME }}
-        password: ${{ secrets.REGISTRY_PASSWORD }}
-    
-    ## Build The Docker Image
-    - run: |
-        docker build -t ${{ env.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.run_number }}-${{ github.sha }} . -f ${{ env.DOCKERFILE }}
+      ## Authenticate with the ACR instance using GitHub secrets
+      - name: authenticate
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ env.CONTAINER_REGISTRY }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+      
+      ## Build The Docker Image
+      - name: build
+        run: |
+          docker build -t ${{ env.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.run_number }}-${{ github.sha }} . -f ${{ env.DOCKERFILE }}
 
-    ## Scan the Docker Image
-    - uses: Azure/container-scan@v0 
-      name: Scan image for vulnerabilities
-      id: container-scan
-      continue-on-error: true
-      with:
-        image-name: ${{ env.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.run_number }}-${{ github.sha }}
+      ## Scan the Docker Image
+      - name: secure
+        uses: Azure/container-scan@v0
+        id: container-scan
+        continue-on-error: true
+        with:
+          image-name: ${{ env.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.run_number }}-${{ github.sha }}
 
-    ## Publish the Docker Images
-    - name: Publish
-      run: |
-        docker push ${{ env.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.run_number }}-${{ github.sha }}
+      ## Publish the Docker Images
+      - name: publish
+        run: |
+          docker push ${{ env.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.run_number }}-${{ github.sha }}
 
-    ## Publish Telemetry to App Insights
-    - name: Post scan results to Azure Defender
-      uses: Azure/publish-security-assessments@v0
-      with: 
-        scan-results-path: ${{ steps.container-scan.outputs.scan-report-path }}
-        connection-string: ${{ secrets.AZ_APPINSIGHTS_CONNECTION_STRING }}
-        subscription-token: ${{ secrets.AZ_SUBSCRIPTION_TOKEN }} 
+      ## Publish Telemetry to App Insights
+      - name: telemetry
+        uses: Azure/publish-security-assessments@v0
+        with: 
+          scan-results-path: ${{ steps.container-scan.outputs.scan-report-path }}
+          connection-string: ${{ secrets.AZ_APPINSIGHTS_CONNECTION_STRING }}
+          subscription-token: ${{ secrets.AZ_SUBSCRIPTION_TOKEN }} 
        
     
