@@ -8,14 +8,13 @@ env:
   CONTAINER_REGISTRY: sbacrdemo.azurecr.io  # set this to Container Registry name
   IMAGE_NAME: ci-scanning-demo
   DOCKERFILE: Dockerfile_vulnerable
-  GIT_BRANCH: ${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}
 
 jobs:
   container-pipeline:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
-              
+
    ## Authentication
     - uses: azure/docker-login@v1
       with:
@@ -25,7 +24,7 @@ jobs:
     
     ## Build The Docker Image
     - run: |
-        docker build -t ${{ env.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.GIT_BRANCH }}-${{ github.run_number }} . -f ${{ env.DOCKERFILE }}
+        docker build -t ${{ env.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.head_ref }}-${{ github.run_number }} . -f ${{ env.DOCKERFILE }}
 
     ## Scan the Docker Image
     - uses: Azure/container-scan@v0 
@@ -33,12 +32,12 @@ jobs:
       id: container-scan
       continue-on-error: true
       with:
-        image-name: ${{ env.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.GIT_BRANCH }}-${{ github.run_number }}
+        image-name: ${{ env.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.head_ref }}-${{ github.run_number }}
 
     ## Publish the Docker Images
     - name: Publish
       run: |
-        docker push ${{ env.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.GIT_BRANCH }}-${{ github.run_number }}
+        docker push ${{ env.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.head_ref }}-${{ github.run_number }}
 
     ## Publish Telemetry to App Insights
     - name: Post scan results to Azure Defender
